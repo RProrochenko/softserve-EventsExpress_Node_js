@@ -1,0 +1,32 @@
+name: SonarQube
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: sonarqube-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  sonarqube:
+    name: SonarQube analysis
+    runs-on: [ self-hosted, linux ]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=softserve-eventsexpress-nodejs \
+            -Dsonar.projectName=softserve-EventsExpress_Node_js \
+            -Dsonar.sources=. \
+            "-Dsonar.exclusions=**/node_modules/**" \
+            -Dsonar.qualitygate.wait=false
